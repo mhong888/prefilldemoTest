@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fenris Prefill — Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0c2e4f;
+    --navy-light: #1a4a72;
+    --teal: #21abad;
+    --teal-light: #e6f8f8;
+    --green: #8cc641;
+    --green-light: #f1f9e6;
+    --gray-50: #f8f9fa;
+    --gray-100: #f1f3f5;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-800: #343a40;
+    --white: #ffffff;
+    --danger: #dc3545;
+    --danger-light: #fff5f5;
+  }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--gray-50); color: var(--gray-800); min-height: 100vh; font-size: 15px; line-height: 1.6; display: flex; flex-direction: column; }
+  main.page-wrap { flex: 1; }
+
+  /* HEADER */
+  .site-header { background: var(--navy); padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+  .site-header img { height: 44px; display: block; mix-blend-mode: screen; }
+  .header-badge { font-size: 12px; color: rgba(255,255,255,0.65); background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); letter-spacing: 0.3px; }
+
+  /* LAYOUT */
+  .page-wrap { max-width: 1060px; margin: 0 auto; padding: 2rem 1.5rem 2rem; }
+  .step-view { display: none; }
+  .step-view.active { display: block; }
+
+  /* TWO-COL for story panels */
+  .two-col { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+  @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } .story-col { order: -1; } }
+
+  /* STEP BAR */
+  .step-bar { display: flex; align-items: center; margin-bottom: 2rem; }
+  .step-item { display: flex; align-items: center; gap: 8px; }
+  .step-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; border: 2px solid var(--gray-400); color: var(--gray-500); background: var(--white); flex-shrink: 0; transition: all 0.2s; }
+  .step-dot.active { border-color: var(--teal); background: var(--teal); color: var(--white); }
+  .step-dot.done { border-color: var(--green); background: var(--green); color: var(--white); }
+  .step-label { font-size: 12px; color: var(--gray-500); white-space: nowrap; }
+  .step-label.active { color: var(--navy); font-weight: 500; }
+  .step-connector { flex: 1; height: 2px; background: var(--gray-200); margin: 0 8px; transition: background 0.3s; }
+  .step-connector.done { background: var(--green); }
+
+  /* CARD */
+  .card { background: var(--white); border-radius: 12px; border: 1px solid var(--gray-200); padding: 2rem; margin-bottom: 1.25rem; }
+  .card-title { font-size: 22px; font-weight: 600; color: var(--navy); margin-bottom: 0.35rem; }
+  .card-sub { font-size: 14px; color: var(--gray-600); margin-bottom: 1.75rem; line-height: 1.5; }
+
+  /* STORY PANEL */
+  .story-panel { background: var(--navy); border-radius: 12px; padding: 1.5rem; color: #fff; position: sticky; top: 20px; }
+  .story-tag { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--teal); margin-bottom: 12px; }
+  .story-avatar { width: 52px; height: 52px; border-radius: 50%; background: rgba(33,171,173,0.25); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; }
+  .story-name { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+  .story-body { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.65; }
+  .story-callout { margin-top: 14px; background: rgba(255,255,255,0.08); border-left: 3px solid var(--teal); border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: 12px; color: rgba(255,255,255,0.9); line-height: 1.6; }
+
+  /* GATE */
+  .gate-wrap { max-width: 480px; margin: 3rem auto; text-align: center; }
+  .gate-logo { font-size: 48px; margin-bottom: 1rem; }
+  .gate-title { font-size: 26px; font-weight: 700; color: var(--navy); margin-bottom: 0.5rem; }
+  .gate-sub { font-size: 14px; color: var(--gray-600); margin-bottom: 1.75rem; line-height: 1.6; }
+  .gate-row { display: flex; gap: 10px; }
+  .gate-input { flex: 1; height: 48px; padding: 0 16px; border: 1.5px solid var(--gray-400); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.15s; }
+  .gate-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(33,171,173,0.15); }
+  .gate-input.error { border-color: var(--danger); }
+  .gate-note { font-size: 11px; color: var(--gray-500); margin-top: 8px; }
+  .field-error { font-size: 12px; color: var(--danger); min-height: 16px; display: block; margin-top: 3px; }
+
+  /* PERSONA PICKER */
+  .persona-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 0.5rem; }
+  @media (max-width: 560px) { .persona-grid { grid-template-columns: 1fr; } }
+  .persona-card { border: 2px solid var(--gray-200); border-radius: 12px; padding: 1.25rem 1rem; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--white); position: relative; }
+  .persona-card:hover:not(.coming-soon) { border-color: var(--teal); background: var(--teal-light); }
+  .persona-card.selected { border-color: var(--teal); background: var(--teal-light); }
+  .persona-card.coming-soon { opacity: 0.5; cursor: not-allowed; }
+  .persona-emoji { font-size: 32px; margin-bottom: 8px; display: block; }
+  .persona-name { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
+  .persona-type { font-size: 11px; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.5px; }
+  .persona-badge { position: absolute; top: 8px; right: 8px; font-size: 10px; font-weight: 600; background: var(--gray-200); color: var(--gray-600); padding: 2px 7px; border-radius: 10px; letter-spacing: 0.3px; }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+  @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 11px; font-weight: 600; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.6px; }
+  .form-input, .form-select { height: 42px; padding: 0 14px; border: 1.5px solid var(--gray-300); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--gray-800); background: var(--white); outline: none; transition: border-color 0.15s, box-shadow 0.15s; width: 100%; }
+  .form-input:focus, .form-select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(33,171,173,0.15); }
+
+  /* BUTTONS */
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 24px; border-radius: 8px; font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-primary { background: var(--teal); color: var(--white); }
+  .btn-primary:hover { background: #1d9799; }
+  .btn-primary:disabled { background: var(--gray-400); cursor: not-allowed; }
+  .btn-success { background: var(--green); color: var(--white); }
+  .btn-success:hover { background: #7eb338; }
+  .btn-outline { background: transparent; color: var(--navy); border: 1.5px solid var(--gray-400); }
+  .btn-outline:hover { background: var(--gray-100); }
+  .action-row { display: flex; align-items: center; gap: 10px; padding-top: 0.5rem; }
+
+  /* API BANNER */
+  .api-banner { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #0f6b6b; background: var(--teal-light); border: 1px solid rgba(33,171,173,0.3); border-radius: 20px; padding: 4px 12px; margin-bottom: 1.25rem; }
+  .api-dot { width: 6px; height: 6px; background: var(--teal); border-radius: 50%; animation: pulse 1.5s ease infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+
+  /* SECTION HEADERS */
+  .section-header { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; margin-bottom: 14px; border-bottom: 1px solid var(--gray-200); }
+  .section-title { font-size: 11px; font-weight: 600; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.6px; }
+  .section-badge { margin-left: auto; font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; background: var(--teal-light); color: #0f6b6b; border: 1px solid rgba(33,171,173,0.25); }
+
+  /* VEHICLE CARDS */
+  .pv-wrap { border: 1.5px solid var(--gray-200); border-radius: 12px; margin-bottom: 16px; background: #fff; overflow: hidden; transition: border-color 0.2s; }
+  .pv-wrap.selected { border-color: var(--teal); }
+  .pv-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #fafafa; border-bottom: 1px solid #eeebe5; }
+  .pv-wrap.selected .pv-header { background: #f0fafa; }
+  .pv-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .pv-toggle-wrap { display: flex; align-items: center; gap: 9px; }
+  .pv-toggle-label { font-size: 13px; color: var(--gray-600); font-weight: 500; }
+  .pv-toggle { width: 44px; height: 24px; border-radius: 999px; background: #ccc; position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+  .pv-toggle.on { background: var(--teal); }
+  .pv-toggle-knob { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: left 0.2s; }
+  .pv-toggle.on .pv-toggle-knob { left: 23px; }
+  .pv-details { padding: 16px 18px; }
+  .pv-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
+  .pv-field-row:last-child { margin-bottom: 0; }
+  .pv-field { display: flex; flex-direction: column; gap: 5px; }
+  .pv-label { font-size: 12px; font-weight: 600; color: var(--navy); }
+  .pv-select { padding: 9px 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; color: var(--navy); background: #fafaf8; font-family: inherit; cursor: pointer; }
+  .pv-select:focus { outline: none; border-color: var(--teal); }
+
+  /* SUMMARY BAR */
+  .summary-bar { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: var(--gray-600); margin-bottom: 1.25rem; }
+  .summary-bar strong { color: var(--navy); }
+  .summary-bar.warn { color: var(--danger); background: var(--danger-light); border-color: rgba(220,53,69,0.2); }
+
+  /* HOUSEHOLD MEMBER CARD */
+  .hm-card { border: 2px solid var(--gray-200); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 12px; }
+  .hm-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .hm-identity { display: flex; align-items: center; gap: 12px; }
+  .hm-avatar { width: 44px; height: 44px; border-radius: 50%; background: #d7f0e8; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #0a4c35; flex-shrink: 0; }
+  .hm-name { font-size: 15px; font-weight: 600; color: var(--navy); }
+  .hm-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .pill { font-size: 11px; padding: 2px 9px; border-radius: 20px; border: 1px solid var(--gray-300); background: var(--white); color: var(--gray-600); }
+  .pill-teal { background: var(--teal-light); color: #0f6b6b; border-color: rgba(33,171,173,0.3); }
+  .insure-row { display: flex; gap: 8px; align-items: center; }
+  .insure-label { font-size: 13px; font-weight: 500; color: var(--gray-800); margin-right: 4px; }
+  .insure-btn { height: 34px; padding: 0 16px; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: 1.5px solid var(--gray-300); background: var(--white); color: var(--gray-600); transition: all 0.15s; }
+  .insure-btn.yes.selected { border-color: var(--green); background: var(--green-light); color: #2d6a00; }
+  .insure-btn.no.selected { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+  .insure-btn:hover { border-color: var(--teal); }
+
+  /* DETAIL FORM — member */
+  .detail-section { margin-bottom: 1.5rem; }
+  .detail-section-title { font-size: 12px; font-weight: 600; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--gray-100); }
+
+  /* SUCCESS */
+  .success-wrap { text-align: center; padding: 3rem 1rem 2rem; }
+  .success-icon { width: 72px; height: 72px; border-radius: 50%; background: var(--green-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 32px; }
+  .success-title { font-size: 26px; font-weight: 700; color: var(--navy); margin-bottom: 0.5rem; }
+  .success-body { font-size: 15px; color: var(--gray-600); max-width: 480px; margin: 0 auto 1rem; line-height: 1.6; }
+  .success-time { font-size: 14px; color: var(--teal); font-weight: 600; margin-bottom: 1.5rem; }
+  .ref-chip { display: inline-block; font-family: monospace; font-size: 13px; background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 6px; padding: 6px 16px; color: var(--gray-600); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
+  .animate { animation: fadeUp 0.22s ease both; }
+
+  /* LOADING */
+  .loading-state { display: flex; align-items: center; gap: 12px; padding: 2rem 0; color: var(--gray-600); font-size: 14px; }
+  .spinner { width: 20px; height: 20px; border: 2px solid var(--gray-200); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.75s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+
+  /* Property demo extras */
+  .accordion { border: 1.5px solid var(--gray-200); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .accordion.open { border-color: var(--teal); }
+  .accordion-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #fafafa; cursor: pointer; user-select: none; transition: background 0.15s; }
+  .accordion.open .accordion-header { background: #f0fafa; }
+  .accordion-title { font-size: 14px; font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 10px; }
+  .accordion-icon { width: 22px; height: 22px; border-radius: 50%; background: var(--teal-light); display: flex; align-items: center; justify-content: center; font-size: 13px; transition: transform 0.2s; flex-shrink: 0; }
+  .accordion.open .accordion-icon { transform: rotate(180deg); }
+  .accordion-badge { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; background: var(--green-light); color: #2d6a00; border: 1px solid rgba(140,198,65,0.3); margin-left: auto; margin-right: 12px; }
+  .accordion-body { padding: 16px 18px; display: none; }
+  .accordion.open .accordion-body { display: block; }
+
+  /* Counter */
+  .counter-wrap { display: flex; align-items: center; gap: 0; }
+  .counter-btn { width: 36px; height: 36px; border: 1.5px solid var(--gray-300); background: var(--white); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--navy); transition: all 0.15s; flex-shrink: 0; }
+  .counter-btn:first-child { border-radius: 8px 0 0 8px; }
+  .counter-btn:last-child { border-radius: 0 8px 8px 0; }
+  .counter-btn:hover { background: var(--gray-100); }
+  .counter-btn:disabled { color: var(--gray-400); cursor: not-allowed; }
+  .counter-val { width: 48px; height: 36px; border: 1.5px solid var(--gray-300); border-left: none; border-right: none; text-align: center; font-size: 15px; font-weight: 600; color: var(--navy); display: flex; align-items: center; justify-content: center; background: var(--white); }
+
+  /* Checkbox grid */
+  .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .check-grid { grid-template-columns: 1fr; } }
+  .check-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1.5px solid var(--gray-200); border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+  .check-item:hover { border-color: var(--teal); background: var(--teal-light); }
+  .check-item.checked { border-color: var(--teal); background: var(--teal-light); }
+  .check-item input[type="checkbox"] { accent-color: var(--teal); width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+  .check-label { font-size: 13px; font-weight: 500; color: var(--navy); }
+
+  /* Yes/No toggle row */
+  .yn-row { display: flex; gap: 8px; }
+  .yn-btn { height: 36px; padding: 0 20px; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: 1.5px solid var(--gray-300); background: var(--white); color: var(--gray-600); transition: all 0.15s; }
+  .yn-btn.yes.active { border-color: var(--green); background: var(--green-light); color: #2d6a00; }
+  .yn-btn.no.active { border-color: var(--gray-400); background: var(--gray-100); color: var(--gray-800); }
+
+  /* Prefill tag on field */
+  .prefilled-tag { font-size: 10px; font-weight: 600; color: var(--teal); text-transform: uppercase; letter-spacing: 0.5px; margin-left: 6px; }
+
+  /* Details page check items full width */
+  .check-grid-1 { display: grid; grid-template-columns: 1fr; gap: 8px; }
+
+  /* Roof age radio */
+  .radio-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .radio-item { padding: 7px 14px; border: 1.5px solid var(--gray-200); border-radius: 20px; font-size: 12px; font-weight: 500; color: var(--gray-600); cursor: pointer; transition: all 0.15s; }
+  .radio-item:hover { border-color: var(--teal); color: var(--navy); }
+  .radio-item.selected { border-color: var(--teal); background: var(--teal-light); color: #0f6b6b; }
+
+</style>
+</head>
+<body>
+
+<main class="page-wrap">
+
+
+<!-- ========== STEP 0: GATE ========== -->
+<div class="step-view active" id="view0">
+  <div style="max-width:500px;margin:3rem auto;text-align:center;">
+    <div style="font-size:52px;margin-bottom:1rem;">⚡</div>
+    <p class="card-title" style="margin-bottom:0.4rem;">See Fenris Prefill in Action</p>
+    <p style="font-size:14px;color:var(--gray-600);margin-bottom:2rem;line-height:1.6;">Enter your information to access the interactive demo and see how Fenris prefills insurance applications in real time.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;text-align:left;">
+      <div>
+        <input class="gate-input" id="gateFirst" type="text" placeholder="First name" autocomplete="given-name" style="width:100%;">
+        <span class="field-error" id="errFirst"></span>
+      </div>
+      <div>
+        <input class="gate-input" id="gateLast" type="text" placeholder="Last name" autocomplete="family-name" style="width:100%;">
+        <span class="field-error" id="errLast"></span>
+      </div>
+    </div>
+    <div class="gate-row">
+      <input class="gate-input" id="gateEmail" type="email" placeholder="you@company.com" autocomplete="email">
+      <button class="btn btn-primary" onclick="submitGate()">Access Demo
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <span class="field-error" id="gateErr"></span>
+    <p class="gate-note">For demonstration purposes only. No data is stored or transmitted.</p>
+  </div>
+</div>
+
+<!-- ========== STEP 1: PERSONA PICKER ========== -->
+<div class="step-view" id="view1">
+  <div style="max-width:680px;margin:0 auto;">
+    <div class="card">
+      <p class="card-title">Try Fenris Prefill for Insurance</p>
+      <p class="card-sub">Select an applicant scenario to try our Insurance Prefill Suite.</p>
+      <div class="persona-grid">
+        <div class="persona-card" id="persona-jenny" onclick="selectPersona('jenny')">
+          <span class="persona-emoji">👩</span>
+          <p class="persona-name">Jenny Everywhere</p>
+          <p class="persona-type">Auto Prefill</p>
+        </div>
+        <div class="persona-card" id="persona-kyle" onclick="selectPersona('kyle')">
+          <span class="persona-emoji">🧔</span>
+          <p class="persona-name">Kyle Murdock</p>
+          <p class="persona-type">Property Prefill</p>
+        </div>
+        <div class="persona-card coming-soon">
+          <span class="persona-badge">Coming Soon</span>
+          <span class="persona-emoji">👵</span>
+          <p class="persona-name">Sibilla Wardley</p>
+          <p class="persona-type">Commercial Prefill</p>
+        </div>
+      </div>
+      <div class="action-row" style="margin-top:1.25rem;">
+        <button class="btn btn-primary" id="personaBtn" onclick="startDemo()" disabled>
+          Start Demo
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== AUTO PREFILL VIEWS ===== -->
+
+
+<!-- ========== STEP 2: APPLICANT INFO (prefilled) ========== -->
+<div class="step-view" id="view2">
+  <!-- step bar -->
+  <div class="step-bar" id="stepBar2">
+    <div class="step-item"><div class="step-dot active" id="sd1">1</div><span class="step-label active">Applicant Info</span></div>
+    <div class="step-connector" id="sc1"></div>
+    <div class="step-item"><div class="step-dot" id="sd2">2</div><span class="step-label">Vehicles</span></div>
+    <div class="step-connector" id="sc2"></div>
+    <div class="step-item"><div class="step-dot" id="sd3">3</div><span class="step-label">Household</span></div>
+    <div class="step-connector" id="sc3"></div>
+    <div class="step-item"><div class="step-dot" id="sd4">4</div><span class="step-label">Member Detail</span></div>
+    <div class="step-connector" id="sc4"></div>
+    <div class="step-item"><div class="step-dot" id="sd5">5</div><span class="step-label">Confirm</span></div>
+  </div>
+
+  <div class="two-col">
+    <div class="main-col">
+      <div class="card animate">
+        <p class="card-title">Applicant Information</p>
+        <p class="card-sub">Tell us about yourself so we can get your quote started.</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input class="form-input" id="f_first" type="text" value="Jenny">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input class="form-input" id="f_last" type="text" value="Everywhere">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <input class="form-input" id="f_dob" type="text" value="11/10/1962">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <select class="form-select" id="f_gender">
+              <option value="female" selected>Female</option>
+              <option value="male">Male</option>
+              <option value="nonbinary">Non-binary</option>
+              <option value="prefer_not">Prefer not to say</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Street Address</label>
+            <input class="form-input" id="f_addr" type="text" value="63724 Ramsey Way">
+          </div>
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input class="form-input" id="f_city" type="text" value="Dallas">
+          </div>
+          <div class="form-group">
+            <label class="form-label">State</label>
+            <input class="form-input" id="f_state" type="text" value="TX" maxlength="2">
+          </div>
+          <div class="form-group">
+            <label class="form-label">ZIP Code</label>
+            <input class="form-input" id="f_zip" type="text" value="75246" maxlength="5">
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" onclick="startPrefillLookup()">Continue
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-panel">
+        <p class="story-tag">The Scenario</p>
+        <div class="story-avatar">👩</div>
+        <p class="story-name">Jenny Everywhere</p>
+        <p class="story-body">Jenny is looking to switch auto insurance carriers. She filled out her basic contact information, and Fenris Prefill will do the rest.</p>
+        <div class="story-callout">Prefill will match Jenny's identity to existing data records and populate her full profile so she can receive an accurate quote with ease.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== STEP 3: VEHICLES ========== -->
+<div class="step-view" id="view3">
+  <div class="step-bar">
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Applicant Info</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot active">2</div><span class="step-label active">Vehicles</span></div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-dot">3</div><span class="step-label">Household</span></div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-dot">4</div><span class="step-label">Member Detail</span></div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-dot">5</div><span class="step-label">Confirm</span></div>
+  </div>
+
+  <div class="two-col">
+    <div class="main-col">
+      <div class="card animate">
+        <div class="api-banner"><span class="api-dot"></span>2 vehicles found at this address</div>
+        <p class="card-title">Vehicle Information</p>
+        <p class="card-sub">We found 2 registered vehicles at your address. Select or add the vehicles you would like to cover.</p>
+
+        <!-- Vehicle 1 -->
+        <div class="pv-wrap selected" id="pvwrap-v1">
+          <div class="pv-header">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V9l2-4h14l2 4v6a2 2 0 0 1-2 2h-2"/><circle cx="8" cy="17" r="2"/><circle cx="16" cy="17" r="2"/></svg>
+              <span class="pv-title">2014 ACURA ILX</span>
+            </div>
+            <div class="pv-toggle-wrap">
+              <span class="pv-toggle-label">Include</span>
+              <div class="pv-toggle on" id="toggle-v1" onclick="toggleVehicle('v1')"><div class="pv-toggle-knob"></div></div>
+            </div>
+          </div>
+          <div class="pv-details" id="details-v1">
+            <div class="pv-field-row">
+              <div class="pv-field"><label class="pv-label">VIN</label><input class="pv-select" type="text" value="19VDE1F72EE001847"></div>
+              <div class="pv-field"><label class="pv-label">Body Type</label>
+                <select class="pv-select"><option selected>Sedan</option><option>SUV</option><option>Truck</option><option>Coupe</option></select>
+              </div>
+            </div>
+            <div class="pv-field-row">
+              <div class="pv-field"><label class="pv-label">Ownership</label>
+                <select class="pv-select"><option selected>Owned</option><option>Leased</option><option>Financed</option></select>
+              </div>
+              <div class="pv-field"><label class="pv-label">Annual Mileage</label>
+                <select class="pv-select"><option>0–5,000</option><option selected>5,001–10,000</option><option>10,001–15,000</option><option>15,001+</option></select>
+              </div>
+            </div>
+            <div class="pv-field-row">
+              <div class="pv-field"><label class="pv-label">Primary Use</label>
+                <select class="pv-select"><option selected>Pleasure</option><option>Commute</option><option>Business</option></select>
+              </div>
+              <div class="pv-field"><label class="pv-label">Fuel Type</label>
+                <select class="pv-select"><option selected>Gas</option><option>Hybrid</option><option>Electric</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vehicle 2 -->
+        <div class="pv-wrap selected" id="pvwrap-v2">
+          <div class="pv-header">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V9l2-4h14l2 4v6a2 2 0 0 1-2 2h-2"/><circle cx="8" cy="17" r="2"/><circle cx="16" cy="17" r="2"/></svg>
+              <span class="pv-title">2004 ACURA TL</span>
+            </div>
+            <div class="pv-toggle-wrap">
+              <span class="pv-toggle-label">Include</span>
+              <div class="pv-toggle on" id="toggle-v2" onclick="toggleVehicle('v2')"><div class="pv-toggle-knob"></div></div>
+            </div>
+          </div>
+          <div class="pv-details" id="details-v2">
+            <div class="pv-field-row">
+              <div class="pv-field"><label class="pv-label">VIN</label><input class="pv-select" type="text" value="19UUA56814A056231"></div>
+              <div class="pv-field"><label class="pv-label">Body Type</label>
+                <select class="pv-select"><option selected>Sedan</option><option>SUV</option><option>Truck</option><option>Coupe</option></select>
+              </div>
+            </div>
+            <div class="pv-field-row">
+              <div class="pv-field"><label class="pv-label">Ownership</label>
+                <select class="pv-select"><option selected>Owned</option><option>Leased</option><option>Financed</option></select>
+              </div>
+              <div class="pv-field"><label class="pv-label">Annual Mileage</label>
+                <select class="pv-select"><option>0–5,000</option><option selected>5,001–10,000</option><option>10,001–15,000</option><option>15,001+</option></select>
+              </div>
+            </div>
+            <div class="pv-field-row">
+              <div class="pv-field"><label class="pv-label">Primary Use</label>
+                <select class="pv-select"><option selected>Pleasure</option><option>Commute</option><option>Business</option></select>
+              </div>
+              <div class="pv-field"><label class="pv-label">Fuel Type</label>
+                <select class="pv-select"><option selected>Gas</option><option>Hybrid</option><option>Electric</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add another vehicle -->
+        <div id="customVehiclesContainer"></div>
+        <button class="btn btn-outline" onclick="addCustomVehicle()" style="margin-bottom:1.25rem;font-size:13px;height:38px;padding:0 16px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Add another vehicle
+        </button>
+
+        <div class="summary-bar" id="vehSummary"><strong>2 vehicles selected</strong>: 2014 ACURA ILX, 2004 ACURA TL</div>
+        <div class="action-row">
+          <button class="btn btn-outline" onclick="goToStep(2)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+          <button class="btn btn-primary" onclick="goToStep(4)">Continue
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-panel">
+        <p class="story-tag">Prefill at Work</p>
+        <div class="story-avatar">🚗</div>
+        <p class="story-name">Vehicles Found</p>
+        <p class="story-body">Jenny's vehicle information has been prefilled for her quote. She can select which vehicles she'd like to cover and correct any details that need to be updated.</p>
+        <div class="story-callout">Fenris pulls vehicle registration data tied to Jenny's address — no VIN lookup or manual entry required.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== STEP 4: HOUSEHOLD MEMBERS ========== -->
+<div class="step-view" id="view4">
+  <div class="step-bar">
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Applicant Info</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Vehicles</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot active">3</div><span class="step-label active">Household</span></div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-dot">4</div><span class="step-label">Member Detail</span></div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-dot">5</div><span class="step-label">Confirm</span></div>
+  </div>
+
+  <div class="two-col">
+    <div class="main-col">
+      <div class="card animate">
+        <div class="api-banner"><span class="api-dot"></span>1 household member found</div>
+        <p class="card-title">Household Members</p>
+        <p class="card-sub">We found 1 additional household member. Select found household member(s) you wish to include. Add additional drivers on the next page.</p>
+
+        <div class="hm-card" id="hmCard">
+          <div class="hm-top">
+            <div class="hm-identity">
+              <div class="hm-avatar">HD</div>
+              <div>
+                <p class="hm-name">Hugo Danner</p>
+                <div class="hm-pills">
+                  <span class="pill">Male</span>
+                  <span class="pill">Age 61</span>
+                  <span class="pill pill-teal">Household member</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding-top:4px;">
+            <span class="insure-label">Insure on this policy?</span>
+            <div class="insure-row">
+              <button class="insure-btn yes" id="hmYes" onclick="setInsure(true)">Yes</button>
+              <button class="insure-btn no" id="hmNo" onclick="setInsure(false)">No</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-bar warn" id="hmWarn" style="display:none;">You must select "Yes" to include Hugo Danner before continuing.</div>
+
+        <div class="action-row">
+          <button class="btn btn-outline" onclick="goToStep(3)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+          <button class="btn btn-primary" onclick="continueHousehold()">Continue
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-panel">
+        <p class="story-tag">Household Discovery</p>
+        <div class="story-avatar">👨‍👩‍👧</div>
+        <p class="story-name">Found at the Same Address</p>
+        <p class="story-body">Prefill is able to find other people living at the same address, making insuring additional household members a breeze.</p>
+        <div class="story-callout"><strong>Hugo Danner</strong> is Jenny's husband. Let's make sure he is included in this quote.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== LOADING: HUGO PREFILL ========== -->
+<div class="step-view" id="viewLoadingHugo">
+  <div style="max-width:500px;margin:5rem auto;text-align:center;">
+    <div style="font-size:48px;margin-bottom:1.5rem;">⚡</div>
+    <p style="font-size:18px;font-weight:600;color:var(--navy);margin-bottom:0.5rem;">Retrieving Prefill Data</p>
+    <p style="font-size:13px;color:var(--gray-600);margin-bottom:2rem;" id="loadingMsgHugo">Querying Fenris API…</p>
+    <div style="background:var(--gray-100);border-radius:999px;height:6px;width:320px;margin:0 auto;overflow:hidden;">
+      <div id="loadingBarHugo" style="height:100%;background:var(--teal);width:0%;border-radius:999px;transition:width 0.15s ease;"></div>
+    </div>
+    <p style="font-size:11px;color:var(--gray-500);margin-top:1rem;">Response time: <span id="loadingMsHugo">—</span></p>
+  </div>
+</div>
+
+<!-- ========== STEP 5: MEMBER DETAIL ========== -->
+<div class="step-view" id="view5">
+  <div class="step-bar">
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Applicant Info</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Vehicles</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Household</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot active">4</div><span class="step-label active">Member Detail</span></div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-dot">5</div><span class="step-label">Confirm</span></div>
+  </div>
+
+  <div class="two-col">
+    <div class="main-col">
+      <div class="card animate">
+        <div class="api-banner"><span class="api-dot"></span>Prefill data matched &mdash; Hugo Danner</div>
+        <p class="card-title">Additional Driver: Hugo Danner</p>
+        <p class="card-sub">Hugo's information has been prefilled. Review and edit any details before submitting.</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input class="form-input" type="text" value="Hugo">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input class="form-input" type="text" value="Danner">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <input class="form-input" type="text" value="11/12/1964">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <select class="form-select">
+              <option value="male" selected>Male</option>
+              <option value="female">Female</option>
+              <option value="nonbinary">Non-binary</option>
+              <option value="prefer_not">Prefer not to say</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">US License Type</label>
+            <select class="form-select">
+              <option value="standard" selected>Standard Driver's License</option>
+              <option value="commercial">Commercial (CDL)</option>
+              <option value="motorcycle">Motorcycle</option>
+              <option value="permit">Learner's Permit</option>
+              <option value="none">No License</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">License State</label>
+            <select class="form-select">
+              <option value="TX" selected>TX — Texas</option>
+              <option value="CA">CA — California</option>
+              <option value="FL">FL — Florida</option>
+              <option value="NY">NY — New York</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Insure on this policy?</label>
+            <div style="display:flex;gap:10px;margin-top:4px;">
+              <button class="insure-btn yes selected" id="detYes" onclick="setDetailInsure(true)" style="flex:0 0 auto;">Yes</button>
+              <button class="insure-btn no" id="detNo" onclick="setDetailInsure(false)" style="flex:0 0 auto;">No</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional drivers -->
+        <div id="additionalDriversContainer"></div>
+        <button class="btn btn-outline" onclick="addAdditionalDriver()" style="margin-bottom:1.25rem;font-size:13px;height:38px;padding:0 16px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Add additional driver
+        </button>
+
+        <div class="action-row">
+          <button class="btn btn-outline" onclick="goToStep(4)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+          <button class="btn btn-success" onclick="submitApplication()">Submit Application
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-panel">
+        <p class="story-tag">Almost Done</p>
+        <div class="story-avatar">🧔</div>
+        <p class="story-name">Hugo Danner</p>
+        <p class="story-body">Hugo's driving details have been prefilled from available records. Jenny can review and edit any details before the final submission.</p>
+        <div class="story-callout">Prefill can find additional household members at the same address, including minors who are of eligible driving age.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== LOADING: POST-SUBMIT ========== -->
+<div class="step-view" id="viewLoadingSubmit">
+  <div style="max-width:500px;margin:5rem auto;text-align:center;">
+    <div style="font-size:48px;margin-bottom:1.5rem;">📋</div>
+    <p style="font-size:18px;font-weight:600;color:var(--navy);margin-bottom:0.5rem;">Submitting Application</p>
+    <p style="font-size:13px;color:var(--gray-600);margin-bottom:2rem;" id="loadingMsgSubmit">Submitting application…</p>
+    <div style="background:var(--gray-100);border-radius:999px;height:6px;width:320px;margin:0 auto;overflow:hidden;">
+      <div id="loadingBarSubmit" style="height:100%;background:var(--teal);width:0%;border-radius:999px;transition:width 0.15s ease;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== STEP 6: SUCCESS ========== -->
+<div class="step-view" id="view6">
+  <div class="step-bar">
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Applicant Info</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Vehicles</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Household</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Member Detail</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Confirm</span></div>
+  </div>
+  <div style="max-width:560px;margin:0 auto;">
+    <div class="card">
+      <div class="success-wrap">
+        <div class="success-icon">🎉</div>
+        <p class="success-title">Application Submitted!</p>
+        <p class="success-body">Thank you for helping Jenny Everywhere submit her application. An agent will be in touch with her shortly with her quote.</p>
+        <p style="font-size:14px;color:var(--navy);font-weight:500;max-width:420px;margin:0 auto 1.5rem;line-height:1.6;">Fenris Prefill helps insurers quote with better, more accurate data — retrieved in real-time.</p>
+        <p class="success-time" id="elapsedDisplay"></p>
+
+        <!-- CTA Panel -->
+        <div style="margin:2rem auto 0;max-width:480px;background:var(--navy);border-radius:12px;padding:1.75rem 2rem;text-align:center;">
+          <p id="ctaHeadline" style="font-size:17px;font-weight:700;color:#fff;margin-bottom:0.5rem;">This application took [X] to complete. Imagine that at scale.</p>
+          <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:1.25rem;line-height:1.6;">Let's talk about what Fenris Prefill can do for your team.</p>
+          <a href="https://info.fenrisd.com/meetings/michael-toy1" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;background:var(--teal);color:#fff;font-family:inherit;font-size:14px;font-weight:500;padding:0 22px;height:42px;border-radius:8px;text-decoration:none;">
+            Request a Meeting
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <div style="margin-top:1.75rem;">
+          <button class="btn btn-outline" onclick="restartDemo()" style="margin:0 auto;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.3"/></svg>
+            Start Over
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ===== PROPERTY PREFILL VIEWS ===== -->
+
+
+<!-- ========== PSTEP 2: APPLICANT INFO ========== -->
+<div class="step-view" id="pview2">
+  <div class="step-bar">
+    <div class="step-item"><div class="step-dot active">1</div><span class="step-label active">Applicant Info</span></div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-dot">2</div><span class="step-label">Property Overview</span></div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-dot">3</div><span class="step-label">Details</span></div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-dot">4</div><span class="step-label">Confirm</span></div>
+  </div>
+  <div class="two-col">
+    <div class="main-col">
+      <div class="card animate">
+        <p class="card-title">Applicant Information</p>
+        <p class="card-sub">Tell us about yourself so we can get your quote started.</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input class="form-input" type="text" value="Kyle">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input class="form-input" type="text" value="Murdock">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <input class="form-input" type="text" value="05/20/1970">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <select class="form-select">
+              <option value="male" selected>Male</option>
+              <option value="female">Female</option>
+              <option value="nonbinary">Non-binary</option>
+              <option value="prefer_not">Prefer not to say</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Street Address</label>
+            <input class="form-input" type="text" value="18595 Old Aldrin Highway">
+          </div>
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input class="form-input" type="text" value="Highlands Ranch">
+          </div>
+          <div class="form-group">
+            <label class="form-label">State</label>
+            <input class="form-input" type="text" value="CO" maxlength="2">
+          </div>
+          <div class="form-group">
+            <label class="form-label">ZIP Code</label>
+            <input class="form-input" type="text" value="80126" maxlength="5">
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" onclick="startPropertyPrefill()">Continue
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-panel">
+        <p class="story-tag">The Scenario</p>
+        <div class="story-avatar">🧔</div>
+        <p class="story-name">Kyle Murdock</p>
+        <p class="story-body">Kyle is looking to get a homeowner's insurance quote for his property in Highlands Ranch, CO. He's filled out his basic contact information — Fenris Property Prefill will do the rest.</p>
+        <div class="story-callout">Prefill will match Kyle's identity and address to property records and populate his home's details so he can receive an accurate quote with ease.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== LOADING: PROPERTY PREFILL ========== -->
+<div class="step-view" id="pviewLoadingProperty">
+  <div style="max-width:500px;margin:5rem auto;text-align:center;">
+    <div style="font-size:48px;margin-bottom:1.5rem;">⚡</div>
+    <p style="font-size:18px;font-weight:600;color:var(--navy);margin-bottom:0.5rem;">Retrieving Prefill Data</p>
+    <p style="font-size:13px;color:var(--gray-600);margin-bottom:2rem;" id="pLoadingMsgProp">Querying Fenris API…</p>
+    <div style="background:var(--gray-100);border-radius:999px;height:6px;width:320px;margin:0 auto;overflow:hidden;">
+      <div id="pLoadingBarProp" style="height:100%;background:var(--teal);width:0%;border-radius:999px;transition:width 0.15s ease;"></div>
+    </div>
+    <p style="font-size:11px;color:var(--gray-500);margin-top:1rem;">Response time: <span id="pLoadingMsProp">—</span></p>
+  </div>
+</div>
+
+<!-- ========== STEP 3: PROPERTY OVERVIEW ========== -->
+<div class="step-view" id="pview3">
+  <div class="step-bar">
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Applicant Info</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot active">2</div><span class="step-label active">Property Overview</span></div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-dot">3</div><span class="step-label">Details</span></div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-dot">4</div><span class="step-label">Confirm</span></div>
+  </div>
+  <div class="two-col">
+    <div class="main-col">
+      <div class="card animate">
+        <div class="api-banner"><span class="api-dot"></span>Property data matched — 18595 Old Aldrin Highway</div>
+        <p class="card-title">Property Overview</p>
+        <p class="card-sub">Kyle's property information has been prefilled from available records. Review and edit any details before continuing.</p>
+
+        <!-- PROPERTY accordion -->
+        <div class="accordion open" id="acc-property">
+          <div class="accordion-header" onclick="toggleAcc('property')">
+            <span class="accordion-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Property
+            </span>
+            <span class="accordion-badge">Prefilled</span>
+            <div class="accordion-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+          </div>
+          <div class="accordion-body">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label class="form-label">Home Style <span class="prefilled-tag">Prefilled</span></label>
+                <select class="form-select">
+                  <option value="sfh" selected>Single Family Home</option>
+                  <option value="condo">Condominium</option>
+                  <option value="townhouse">Townhouse</option>
+                  <option value="manufactured">Manufactured/Mobile Home</option>
+                  <option value="multifamily">Multi-Family Home</option>
+                  <option value="nontraditional">Non-Traditional Residence</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Year Built <span class="prefilled-tag">Prefilled</span></label>
+                <input class="form-input" type="text" value="1996">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Square Footage <span class="prefilled-tag">Prefilled</span></label>
+                <input class="form-input" type="text" value="2345">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Number of Stories</label>
+                <input class="form-input" type="text" placeholder="Enter number of stories">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Type of Construction <span class="prefilled-tag">Prefilled</span></label>
+                <select class="form-select">
+                  <option value="frame" selected>Frame</option>
+                  <option value="masonry">Masonry</option>
+                  <option value="masonry_veneer">Masonry Veneer</option>
+                  <option value="log">Log</option>
+                  <option value="asbestos">Asbestos</option>
+                  <option value="efis">EFIS</option>
+                  <option value="sfr">Superior Fire Resistive</option>
+                  <option value="smn">Superior Masonry Non-Combustible</option>
+                  <option value="snc">Superior Non-Combustible</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Property Acreage</label>
+                <input class="form-input" type="text" placeholder="Enter acreage">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXTERIOR accordion -->
+        <div class="accordion" id="acc-exterior">
+          <div class="accordion-header" onclick="toggleAcc('exterior')">
+            <span class="accordion-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              Exterior
+            </span>
+            <span class="accordion-badge">Prefilled</span>
+            <div class="accordion-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+          </div>
+          <div class="accordion-body">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label class="form-label">Does this home have a garage or carport? <span class="prefilled-tag">Prefilled</span></label>
+                <div class="yn-row">
+                  <button class="yn-btn yes active" id="garageYes" onclick="setGarage(true)">Yes</button>
+                  <button class="yn-btn no" id="garageNo" onclick="setGarage(false)">No</button>
+                </div>
+              </div>
+              <div class="form-group full" id="garageTypeWrap">
+                <label class="form-label">Type of garage or carport <span class="prefilled-tag">Prefilled</span></label>
+                <select class="form-select">
+                  <option value="attached" selected>Attached</option>
+                  <option value="basement">Basement</option>
+                  <option value="builtin">Built-In</option>
+                  <option value="carport">Carport</option>
+                  <option value="detached">Detached</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Primary exterior material</label>
+                <select class="form-select">
+                  <option value="">Select…</option>
+                  <option>Adobe Block</option>
+                  <option>Aluminum Siding</option>
+                  <option>Asbestos Siding</option>
+                  <option>Brick Veneer</option>
+                  <option>Cement Fiber Shingles</option>
+                  <option>Clapboard</option>
+                  <option>Concrete Block</option>
+                  <option>Hardboard Siding</option>
+                  <option>Insulated Concrete Forms</option>
+                  <option>Light Gauge Steel Framing</option>
+                  <option>Logs Solid</option>
+                  <option>Masonite Siding</option>
+                  <option>Pre Engineered Metal</option>
+                  <option>Solid Brick Construction</option>
+                  <option>Solid Concrete</option>
+                  <option>Standard Pole Framed</option>
+                  <option>Stone</option>
+                  <option>Structural Insulated Panels</option>
+                  <option>Stucco</option>
+                  <option>Timber Framing</option>
+                  <option>Vinyl Siding</option>
+                  <option>Wood Siding</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Roof shape <span class="prefilled-tag">Prefilled</span></label>
+                <select class="form-select">
+                  <option value="">Select…</option>
+                  <option value="custom">Custom</option>
+                  <option value="flat">Flat</option>
+                  <option value="gable" selected>Gable</option>
+                  <option value="hip">Hip</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Primary roof material <span class="prefilled-tag">Prefilled</span></label>
+                <select class="form-select">
+                  <option value="">Select…</option>
+                  <option value="clay">Tile - Clay</option>
+                  <option value="concrete">Tile - Concrete</option>
+                  <option value="mission">Tile - Mission</option>
+                  <option value="spanish">Tile - Spanish</option>
+                  <option value="tin">Tin</option>
+                  <option value="fiberglass" selected>Wood Fiberglass Shingles</option>
+                  <option value="shake">Wood Shake</option>
+                  <option value="singles">Wood Singles</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INTERIOR accordion -->
+        <div class="accordion" id="acc-interior">
+          <div class="accordion-header" onclick="toggleAcc('interior')">
+            <span class="accordion-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              Interior
+            </span>
+            <span class="accordion-badge">Prefilled</span>
+            <div class="accordion-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+          </div>
+          <div class="accordion-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Full bathrooms <span class="prefilled-tag">Prefilled</span></label>
+                <div class="counter-wrap">
+                  <button class="counter-btn" onclick="changeCounter('fullBath',-1)">−</button>
+                  <div class="counter-val" id="fullBathVal">3</div>
+                  <button class="counter-btn" onclick="changeCounter('fullBath',1)">+</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Half bathrooms <span class="prefilled-tag">Prefilled</span></label>
+                <div class="counter-wrap">
+                  <button class="counter-btn" onclick="changeCounter('halfBath',-1)">−</button>
+                  <div class="counter-val" id="halfBathVal">1</div>
+                  <button class="counter-btn" onclick="changeCounter('halfBath',1)">+</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fireplaces</label>
+                <div class="counter-wrap">
+                  <button class="counter-btn" onclick="changeCounter('fireplace',-1)">−</button>
+                  <div class="counter-val" id="fireplaceVal">0</div>
+                  <button class="counter-btn" onclick="changeCounter('fireplace',1)">+</button>
+                </div>
+              </div>
+              <div class="form-group" id="fireplaceTypeWrap" style="display:none;">
+                <label class="form-label">Type of fireplace</label>
+                <select class="form-select">
+                  <option value="">Select…</option>
+                  <option>Gas</option>
+                  <option>Wood Burning</option>
+                  <option>Wood Stove/Freestanding</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Central air conditioning <span class="prefilled-tag">Prefilled</span></label>
+                <div class="yn-row">
+                  <button class="yn-btn yes active" id="acYes" onclick="setAC(true)">Yes</button>
+                  <button class="yn-btn no" id="acNo" onclick="setAC(false)">No</button>
+                </div>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Primary heating type <span class="prefilled-tag">Prefilled</span></label>
+                <select class="form-select">
+                  <option value="">Select…</option>
+                  <option value="electric">Electric</option>
+                  <option value="gas" selected>Gas</option>
+                  <option value="oil">Oil</option>
+                  <option value="solid">Solid Fuel</option>
+                  <option value="wood">Wood-Burning Stove</option>
+                  <option value="none">No Heating</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn btn-outline" onclick="pGoToStep(2)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+          <button class="btn btn-primary" onclick="pGoToStep(4)">Continue
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-panel">
+        <p class="story-tag">Prefill at Work</p>
+        <div class="story-avatar">🏠</div>
+        <p class="story-name">Property Data Retrieved</p>
+        <p class="story-body">Kyle's property details have been prefilled from public records. He can review and edit any details before continuing — no manual lookup required.</p>
+        <div class="story-callout">Fenris pulls property data tied to Kyle's address in real-time — year built, square footage, construction type, and more.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== STEP 4: DETAILS ========== -->
+<div class="step-view" id="pview4">
+  <div class="step-bar">
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Applicant Info</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Property Overview</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot active">3</div><span class="step-label active">Details</span></div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-dot">4</div><span class="step-label">Confirm</span></div>
+  </div>
+  <div class="two-col">
+    <div class="main-col">
+      <div class="card animate">
+        <p class="card-title">Property Details</p>
+        <p class="card-sub">A few more details to complete Kyle's application.</p>
+
+        <div class="detail-section">
+          <p class="detail-section-title">Fire Safety Features</p>
+          <div class="check-grid">
+            <label class="check-item"><input type="checkbox" onchange="this.closest('.check-item').classList.toggle('checked',this.checked)"><span class="check-label">Smoke detectors</span></label>
+            <label class="check-item"><input type="checkbox" onchange="this.closest('.check-item').classList.toggle('checked',this.checked)"><span class="check-label">Fire extinguishers</span></label>
+            <label class="check-item"><input type="checkbox" onchange="this.closest('.check-item').classList.toggle('checked',this.checked)"><span class="check-label">Indoor sprinkler system</span></label>
+            <label class="check-item"><input type="checkbox" onchange="this.closest('.check-item').classList.toggle('checked',this.checked)"><span class="check-label">Fire alarm system</span></label>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <p class="detail-section-title">Security Features</p>
+          <div class="check-grid">
+            <label class="check-item"><input type="checkbox" onchange="this.closest('.check-item').classList.toggle('checked',this.checked)"><span class="check-label">Deadbolts (all exterior doors)</span></label>
+            <label class="check-item"><input type="checkbox" onchange="this.closest('.check-item').classList.toggle('checked',this.checked)"><span class="check-label">Security alarm system</span></label>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <p class="detail-section-title">Roof</p>
+          <label class="form-label" style="margin-bottom:10px;display:block;">When was the last time the roof was replaced?</label>
+          <select class="form-select">
+            <option value="">Select…</option>
+            <option>0–4 years</option>
+            <option>5–9 years</option>
+            <option>10–14 years</option>
+            <option>15–19 years</option>
+            <option>20–29 years</option>
+            <option>30–39 years</option>
+            <option>40–50 years</option>
+            <option>51+ years</option>
+            <option>Not replaced</option>
+          </select>
+        </div>
+
+        <div class="detail-section">
+          <p class="detail-section-title">Interior Finishes</p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Flooring type</label>
+              <select class="form-select">
+                <option value="">Select…</option>
+                <option>Hardwood</option>
+                <option>Laminate</option>
+                <option>Tile</option>
+                <option>Carpet</option>
+                <option>Vinyl/LVP</option>
+                <option>Concrete</option>
+                <option>Stone</option>
+                <option>Mixed</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Interior wall type</label>
+              <select class="form-select">
+                <option value="">Select…</option>
+                <option>Drywall</option>
+                <option>Plaster</option>
+                <option>Wood Paneling</option>
+                <option>Brick</option>
+                <option>Concrete Block</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Primary kitchen counter material</label>
+              <select class="form-select">
+                <option value="">Select…</option>
+                <option>Plastic Laminate</option>
+                <option>Granite or Marble</option>
+                <option>Solid Surface</option>
+                <option>Tile</option>
+                <option>Concrete</option>
+                <option>Quartz</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <p class="detail-section-title">Additional Features</p>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">Does this home have a pool or hot tub? <span class="prefilled-tag">Prefilled</span></label>
+              <div class="yn-row">
+                <button class="yn-btn yes" id="poolYes" onclick="setPool(true)">Yes</button>
+                <button class="yn-btn no active" id="poolNo" onclick="setPool(false)">No</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Foundation type</label>
+              <select class="form-select">
+                <option value="">Select…</option>
+                <option>Slab</option>
+                <option>Crawl Space</option>
+                <option>Basement</option>
+                <option>Pier &amp; Beam</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Electrical panel type</label>
+              <select class="form-select">
+                <option value="">Select…</option>
+                <option>Circuit Breakers</option>
+                <option>Fuse Box</option>
+                <option>Aluminum Wiring</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Primary plumbing material</label>
+              <select class="form-select">
+                <option value="">Select…</option>
+                <option>Copper</option>
+                <option>PVC</option>
+                <option>Galvanized Steel</option>
+                <option>PEX</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Heating system age</label>
+              <select class="form-select">
+                <option value="">Select…</option>
+                <option>0–4 years</option>
+                <option>5–9 years</option>
+                <option>10–14 years</option>
+                <option>15–19 years</option>
+                <option>20+ years</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn btn-outline" onclick="pGoToStep(3)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+          <button class="btn btn-success" onclick="pSubmitApplication()">Submit Application
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="story-col">
+      <div class="story-panel">
+        <p class="story-tag">Almost Done</p>
+        <div class="story-avatar">📋</div>
+        <p class="story-name">Final Details</p>
+        <p class="story-body">A few final details help the insurer understand Kyle's property risk profile. These are standard questions that complete the picture prefill started.</p>
+        <div class="story-callout">Prefill can find additional household members at the same address, including minors who are of eligible driving age.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== LOADING: SUBMIT ========== -->
+<div class="step-view" id="pviewLoadingSubmit">
+  <div style="max-width:500px;margin:5rem auto;text-align:center;">
+    <div style="font-size:48px;margin-bottom:1.5rem;">📋</div>
+    <p style="font-size:18px;font-weight:600;color:var(--navy);margin-bottom:0.5rem;">Submitting Application</p>
+    <p style="font-size:13px;color:var(--gray-600);margin-bottom:2rem;" id="pLoadingMsgSubmit">Submitting application…</p>
+    <div style="background:var(--gray-100);border-radius:999px;height:6px;width:320px;margin:0 auto;overflow:hidden;">
+      <div id="pLoadingBarSubmit" style="height:100%;background:var(--teal);width:0%;border-radius:999px;transition:width 0.15s ease;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== STEP 5: SUCCESS ========== -->
+<div class="step-view" id="pview5">
+  <div class="step-bar">
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Applicant Info</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Property Overview</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Details</span></div>
+    <div class="step-connector done"></div>
+    <div class="step-item"><div class="step-dot done">✓</div><span class="step-label">Confirm</span></div>
+  </div>
+  <div style="max-width:560px;margin:0 auto;">
+    <div class="card">
+      <div class="success-wrap">
+        <div class="success-icon">🎉</div>
+        <p class="success-title">Application Submitted!</p>
+        <p class="success-body">Thank you for helping Kyle Murdock submit his application. An agent will be in touch with him shortly with his quote.</p>
+        <p style="font-size:14px;color:var(--navy);font-weight:500;max-width:420px;margin:0 auto 1.5rem;line-height:1.6;">Fenris Prefill helps insurers quote with better, more accurate data — retrieved in real-time.</p>
+        <p class="success-time" id="pElapsedDisplay"></p>
+
+        <div style="margin:2rem auto 0;max-width:480px;background:var(--navy);border-radius:12px;padding:1.75rem 2rem;text-align:center;">
+          <p id="pCtaHeadline" style="font-size:17px;font-weight:700;color:#fff;margin-bottom:0.5rem;">This application took [X] to complete. Imagine that at scale.</p>
+          <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:1.25rem;line-height:1.6;">Let's talk about what Fenris Prefill can do for your team.</p>
+          <a href="https://info.fenrisd.com/meetings/michael-toy1" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;background:var(--teal);color:#fff;font-family:inherit;font-size:14px;font-weight:500;padding:0 22px;height:42px;border-radius:8px;text-decoration:none;">
+            Request a Meeting
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <div style="margin-top:1.75rem;">
+          <button class="btn btn-outline" onclick="pRestartDemo()" style="margin:0 auto;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.3"/></svg>
+            Start Over
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</main>
+
+
+<script>
+  /* ===== SHARED STATE ===== */
+  var selectedPersona = null;
+  var jennyStartTime = null;
+  var kyleStartTime = null;
+  var selectedVehicles = new Set(['v1','v2']);
+  var customVehicleCount = 0;
+  var additionalDriverCount = 0;
+  var hmInsure = null;
+  var counters = { fullBath: 3, halfBath: 1, fireplace: 0 };
+  var garageOn = true;
+  var acOn = true;
+  var poolOn = false;
+
+  /* ===== GATE ===== */
+  function submitGate() {
+    var first = document.getElementById('gateFirst').value.trim();
+    var last  = document.getElementById('gateLast').value.trim();
+    var email = document.getElementById('gateEmail').value.trim();
+    var ok = true;
+    ['errFirst','errLast','gateErr'].forEach(function(id){ document.getElementById(id).textContent=''; });
+    ['gateFirst','gateLast','gateEmail'].forEach(function(id){ document.getElementById(id).classList.remove('error'); });
+    if (!first) { document.getElementById('gateFirst').classList.add('error'); document.getElementById('errFirst').textContent='Required'; ok=false; }
+    if (!last)  { document.getElementById('gateLast').classList.add('error');  document.getElementById('errLast').textContent='Required';  ok=false; }
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      document.getElementById('gateEmail').classList.add('error');
+      document.getElementById('gateErr').textContent = 'Please enter a valid email address.';
+      ok = false;
+    }
+    if (!ok) return;
+    showView('view1');
+  }
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && document.getElementById('view0').classList.contains('active')) submitGate();
+  });
+  document.addEventListener('DOMContentLoaded', function() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('demo') === 'true') showView('view1');
+  });
+
+  /* ===== PERSONA PICKER ===== */
+  function selectPersona(id) {
+    document.querySelectorAll('.persona-card:not(.coming-soon)').forEach(function(c){ c.classList.remove('selected'); });
+    document.getElementById('persona-' + id).classList.add('selected');
+    selectedPersona = id;
+    document.getElementById('personaBtn').disabled = false;
+  }
+  function startDemo() {
+    if (selectedPersona === 'jenny') {
+      jennyStartTime = Date.now();
+      showView('view2');
+    } else if (selectedPersona === 'kyle') {
+      kyleStartTime = Date.now();
+      showView('pview2');
+    }
+  }
+
+  /* ===== AUTO — LOADING ===== */
+  function startPrefillLookup() {
+    showView('viewLoading');
+    runLoadingSequence();
+  }
+  function runLoadingSequence() {
+    var bar = document.getElementById('loadingBar');
+    var msg = document.getElementById('loadingMsg');
+    var ms  = document.getElementById('loadingMs');
+    var steps = [[0,'Querying Fenris API\u2026'],[30,'Matching identity\u2026'],[60,'Retrieving vehicle data\u2026'],[100,'Data retrieved.']];
+    var i = 0;
+    function next() {
+      if (i >= steps.length) { ms.textContent = '2 ms'; setTimeout(function(){ goToStep(3); }, 350); return; }
+      bar.style.width = steps[i][0] + '%'; msg.textContent = steps[i][1]; i++;
+      setTimeout(next, i === steps.length ? 400 : 190);
+    }
+    bar.style.width = '0%'; ms.textContent = '\u2014'; setTimeout(next, 80);
+  }
+
+  /* ===== AUTO — VEHICLES ===== */
+  function toggleVehicle(id) {
+    var wrap = document.getElementById('pvwrap-' + id);
+    var tog  = document.getElementById('toggle-' + id);
+    var det  = document.getElementById('details-' + id);
+    if (selectedVehicles.has(id)) {
+      selectedVehicles.delete(id); wrap.classList.remove('selected'); tog.classList.remove('on');
+      det.style.opacity = '0.4'; det.style.pointerEvents = 'none';
+    } else {
+      selectedVehicles.add(id); wrap.classList.add('selected'); tog.classList.add('on');
+      det.style.opacity = '1'; det.style.pointerEvents = '';
+    }
+    updateVehSummary();
+  }
+  function updateVehSummary() {
+    var names = {'v1':'2014 ACURA ILX','v2':'2004 ACURA TL'};
+    var bar = document.getElementById('vehSummary');
+    var sel = Array.from(selectedVehicles);
+    var saved = document.querySelectorAll('.custom-vehicle-saved');
+    var total = sel.length + saved.length;
+    bar.classList.remove('warn');
+    if (!total) { bar.classList.add('warn'); bar.innerHTML = 'Please select at least one vehicle.'; return; }
+    var nameList = sel.map(function(v){ return names[v] || v; });
+    saved.forEach(function(el){ nameList.push(el.dataset.label || 'Custom vehicle'); });
+    bar.innerHTML = '<strong>' + total + ' vehicle' + (total > 1 ? 's' : '') + ' selected</strong>: ' + nameList.join(', ');
+  }
+  function addCustomVehicle() {
+    customVehicleCount++;
+    var cvid = 'cv' + customVehicleCount;
+    var container = document.getElementById('customVehiclesContainer');
+    var wrap = document.createElement('div');
+    wrap.id = 'cvwrap-' + cvid;
+    wrap.style.cssText = 'border:1.5px solid var(--teal);border-radius:12px;margin-bottom:16px;background:#fff;overflow:hidden;';
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'padding:14px 18px;background:#f0fafa;border-bottom:1px solid #c8efef;display:flex;align-items:center;justify-content:space-between;';
+    hdr.innerHTML = '<span style="font-size:15px;font-weight:700;color:var(--navy);">New Vehicle</span>';
+    var rmBtn = document.createElement('button');
+    rmBtn.innerHTML = '&#x2715;';
+    rmBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:18px;color:var(--gray-500);';
+    rmBtn.addEventListener('click', (function(id){ return function(){ removeCustomVehicle(id); }; })(cvid));
+    hdr.appendChild(rmBtn);
+    wrap.appendChild(hdr);
+    var body = document.createElement('div');
+    body.style.cssText = 'padding:16px 18px;';
+    body.innerHTML =
+      '<div class="pv-field-row">' +
+        '<div class="pv-field"><label class="pv-label">Year</label><input class="pv-select" type="text" id="cv_year_' + cvid + '" placeholder="e.g. 2020"></div>' +
+        '<div class="pv-field"><label class="pv-label">Make</label><input class="pv-select" type="text" id="cv_make_' + cvid + '" placeholder="e.g. HONDA"></div>' +
+      '</div>' +
+      '<div class="pv-field-row">' +
+        '<div class="pv-field"><label class="pv-label">Model</label><input class="pv-select" type="text" id="cv_model_' + cvid + '" placeholder="e.g. Civic"></div>' +
+        '<div class="pv-field"><label class="pv-label">VIN</label><input class="pv-select" type="text" id="cv_vin_' + cvid + '" placeholder="17-character VIN"></div>' +
+      '</div>' +
+      '<div class="pv-field-row">' +
+        '<div class="pv-field"><label class="pv-label">Body Type</label><select class="pv-select" id="cv_body_' + cvid + '"><option value="">Select...</option><option>Sedan</option><option>SUV</option><option>Truck</option><option>Coupe</option><option>Van</option><option>Convertible</option></select></div>' +
+        '<div class="pv-field"><label class="pv-label">Ownership</label><select class="pv-select" id="cv_own_' + cvid + '"><option value="">Select...</option><option>Owned</option><option>Leased</option><option>Financed</option></select></div>' +
+      '</div>' +
+      '<div class="pv-field-row">' +
+        '<div class="pv-field"><label class="pv-label">Annual Mileage</label><select class="pv-select" id="cv_miles_' + cvid + '"><option value="">Select...</option><option>0-5,000</option><option>5,001-10,000</option><option>10,001-15,000</option><option>15,001+</option></select></div>' +
+        '<div class="pv-field"><label class="pv-label">Fuel Type</label><select class="pv-select" id="cv_fuel_' + cvid + '"><option value="">Select...</option><option>Gas</option><option>Hybrid</option><option>Electric</option><option>Diesel</option></select></div>' +
+      '</div>' +
+      '<div class="pv-field-row">' +
+        '<div class="pv-field"><label class="pv-label">Primary Use</label><select class="pv-select" id="cv_use_' + cvid + '"><option value="">Select...</option><option>Pleasure</option><option>Commute</option><option>Business</option></select></div>' +
+      '</div>';
+    var saveBtn = document.createElement('button');
+    saveBtn.className = 'btn btn-primary';
+    saveBtn.style.cssText = 'height:38px;font-size:13px;margin-top:8px;';
+    saveBtn.textContent = 'Save Vehicle';
+    saveBtn.addEventListener('click', (function(id){ return function(){ saveCustomVehicle(id); }; })(cvid));
+    body.appendChild(saveBtn);
+    wrap.appendChild(body);
+    container.appendChild(wrap);
+    wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+  function saveCustomVehicle(cvid) {
+    var year  = document.getElementById('cv_year_'  + cvid).value.trim();
+    var make  = document.getElementById('cv_make_'  + cvid).value.trim();
+    var model = document.getElementById('cv_model_' + cvid).value.trim();
+    if (!year || !make || !model) { alert('Please enter at least Year, Make, and Model.'); return; }
+    var label = year + ' ' + make.toUpperCase() + ' ' + model.toUpperCase();
+    var wrap = document.getElementById('cvwrap-' + cvid);
+    wrap.innerHTML =
+      '<div style="padding:14px 18px;background:#f0fafa;border-bottom:1px solid #c8efef;display:flex;align-items:center;justify-content:space-between;">' +
+        '<div style="display:flex;align-items:center;gap:10px;">' +
+          '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V9l2-4h14l2 4v6a2 2 0 0 1-2 2h-2"/><circle cx="8" cy="17" r="2"/><circle cx="16" cy="17" r="2"/></svg>' +
+          '<span style="font-size:15px;font-weight:700;color:var(--navy);">' + label + '</span>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;" id="cv_saved_btns_' + cvid + '">' +
+          '<span style="font-size:12px;color:#0f6b6b;background:var(--teal-light);border:1px solid rgba(33,171,173,0.3);padding:2px 9px;border-radius:20px;font-weight:500;">Added</span>' +
+        '</div>' +
+      '</div>';
+    var rmBtn = document.createElement('button');
+    rmBtn.innerHTML = '&#x2715;';
+    rmBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:16px;color:var(--gray-500);';
+    rmBtn.addEventListener('click', (function(id){ return function(){ removeCustomVehicle(id); }; })(cvid));
+    document.getElementById('cv_saved_btns_' + cvid).appendChild(rmBtn);
+    wrap.classList.add('custom-vehicle-saved');
+    wrap.dataset.label = label;
+    updateVehSummary();
+  }
+  function removeCustomVehicle(cvid) {
+    var el = document.getElementById('cvwrap-' + cvid);
+    if (el) el.remove();
+    updateVehSummary();
+  }
+
+  /* ===== AUTO — HOUSEHOLD ===== */
+  function setInsure(val) {
+    hmInsure = val;
+    document.getElementById('hmYes').classList.toggle('selected', val === true);
+    document.getElementById('hmNo').classList.toggle('selected', val === false);
+    document.getElementById('hmWarn').style.display = 'none';
+  }
+  function continueHousehold() {
+    if (hmInsure !== true) { document.getElementById('hmWarn').style.display = 'block'; return; }
+    showView('viewLoadingHugo');
+    runLoadingHugo();
+  }
+  function runLoadingHugo() {
+    var bar = document.getElementById('loadingBarHugo');
+    var msg = document.getElementById('loadingMsgHugo');
+    var ms  = document.getElementById('loadingMsHugo');
+    var steps = [[0,'Querying Fenris API\u2026'],[30,'Matching identity\u2026'],[60,'Retrieving driver data\u2026'],[100,'Data retrieved.']];
+    var i = 0;
+    function next() {
+      if (i >= steps.length) { ms.textContent = '2 ms'; setTimeout(function(){ goToStep(5); }, 350); return; }
+      bar.style.width = steps[i][0] + '%'; msg.textContent = steps[i][1]; i++;
+      setTimeout(next, i === steps.length ? 400 : 190);
+    }
+    bar.style.width = '0%'; ms.textContent = '\u2014'; setTimeout(next, 80);
+  }
+  function setDetailInsure(val) {
+    document.getElementById('detYes').classList.toggle('selected', val === true);
+    document.getElementById('detNo').classList.toggle('selected', val === false);
+  }
+  function addAdditionalDriver() {
+    additionalDriverCount++;
+    var n = additionalDriverCount;
+    var adid = 'ad' + n;
+    var container = document.getElementById('additionalDriversContainer');
+    var div = document.createElement('div');
+    div.id = 'adwrap-' + adid;
+    div.style.cssText = 'border:1.5px solid var(--gray-200);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1rem;';
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;';
+    hdr.innerHTML = '<p style="font-size:14px;font-weight:600;color:var(--navy);">Additional Driver ' + n + '</p>';
+    var rmBtn = document.createElement('button');
+    rmBtn.innerHTML = '&#x2715;';
+    rmBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:16px;color:var(--gray-500);';
+    rmBtn.addEventListener('click', (function(id){ return function(){ removeAdditionalDriver(id); }; })(adid));
+    hdr.appendChild(rmBtn);
+    div.appendChild(hdr);
+    var body = document.createElement('div');
+    body.className = 'form-grid';
+    body.innerHTML =
+      '<div class="form-group"><label class="form-label">First Name</label><input class="form-input" type="text" placeholder="First name"></div>' +
+      '<div class="form-group"><label class="form-label">Last Name</label><input class="form-input" type="text" placeholder="Last name"></div>' +
+      '<div class="form-group"><label class="form-label">Date of Birth</label><input class="form-input" type="text" placeholder="MM/DD/YYYY"></div>' +
+      '<div class="form-group"><label class="form-label">Gender</label><select class="form-select"><option value="">Select...</option><option>Male</option><option>Female</option><option>Non-binary</option><option>Prefer not to say</option></select></div>' +
+      '<div class="form-group"><label class="form-label">US License Type</label><select class="form-select"><option value="">Select...</option><option>Standard Drivers License</option><option>Commercial (CDL)</option><option>Motorcycle</option><option>Learners Permit</option><option>No License</option></select></div>' +
+      '<div class="form-group"><label class="form-label">License State</label><select class="form-select"><option value="">Select...</option><option>TX</option><option>CA</option><option>FL</option><option>NY</option><option>IL</option><option>PA</option><option>OH</option></select></div>' +
+      '<div class="form-group full"><label class="form-label">Insure on this policy?</label><div style="display:flex;gap:8px;margin-top:4px;" id="ad_insure_' + adid + '"></div></div>';
+    div.appendChild(body);
+    var yesBtn = document.createElement('button');
+    yesBtn.className = 'insure-btn yes';
+    yesBtn.textContent = 'Yes';
+    yesBtn.addEventListener('click', function(){ yesBtn.classList.add('selected'); noBtn.classList.remove('selected'); });
+    var noBtn = document.createElement('button');
+    noBtn.className = 'insure-btn no';
+    noBtn.textContent = 'No';
+    noBtn.addEventListener('click', function(){ noBtn.classList.add('selected'); yesBtn.classList.remove('selected'); });
+    div.querySelector('#ad_insure_' + adid).appendChild(yesBtn);
+    div.querySelector('#ad_insure_' + adid).appendChild(noBtn);
+    container.appendChild(div);
+    div.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+  function removeAdditionalDriver(adid) {
+    var el = document.getElementById('adwrap-' + adid);
+    if (el) el.remove();
+  }
+
+  /* ===== AUTO — SUBMIT ===== */
+  function submitApplication() {
+    var elapsed = jennyStartTime ? Date.now() - jennyStartTime : 0;
+    var secs = Math.round(elapsed / 1000); var mins = Math.floor(secs / 60);
+    var timeStr = mins > 0 ? mins + 'm ' + (secs % 60) + 's' : secs + 's';
+    document.getElementById('elapsedDisplay').textContent = 'This application only took ' + timeStr + ' from start to submission.';
+    document.getElementById('ctaHeadline').textContent = 'This application took ' + timeStr + ' to complete. Imagine that at scale.';
+    showView('viewLoadingSubmit');
+    var bar = document.getElementById('loadingBarSubmit');
+    var msg = document.getElementById('loadingMsgSubmit');
+    var i = 0; var steps = [[0,'Submitting application\u2026'],[100,'Submitting application\u2026']];
+    function next() {
+      if (i >= steps.length) { setTimeout(function(){ goToStep(6); }, 350); return; }
+      bar.style.width = steps[i][0] + '%'; msg.textContent = steps[i][1]; i++;
+      setTimeout(next, i === steps.length ? 400 : 200);
+    }
+    bar.style.width = '0%'; setTimeout(next, 80);
+  }
+
+  /* ===== AUTO — NAV ===== */
+  function goToStep(n) {
+    var map = {2:'view2',3:'view3',4:'view4',5:'view5',6:'view6'};
+    showView(map[n] || 'view2');
+  }
+
+  /* ===== PROPERTY — LOADING ===== */
+  function startPropertyPrefill() {
+    showView('pviewLoadingProperty');
+    var bar = document.getElementById('pLoadingBarProp');
+    var msg = document.getElementById('pLoadingMsgProp');
+    var ms  = document.getElementById('pLoadingMsProp');
+    var steps = [[0,'Querying Fenris API\u2026'],[30,'Matching identity\u2026'],[60,'Retrieving property data\u2026'],[100,'Data retrieved.']];
+    var i = 0;
+    function next() {
+      if (i >= steps.length) { ms.textContent = '2 ms'; setTimeout(function(){ pGoToStep(3); }, 350); return; }
+      bar.style.width = steps[i][0] + '%'; msg.textContent = steps[i][1]; i++;
+      setTimeout(next, i === steps.length ? 400 : 190);
+    }
+    bar.style.width = '0%'; ms.textContent = '\u2014'; setTimeout(next, 80);
+  }
+
+  /* ===== PROPERTY — ACCORDION ===== */
+  function toggleAcc(id) {
+    document.getElementById('acc-' + id).classList.toggle('open');
+  }
+
+  /* ===== PROPERTY — COUNTERS ===== */
+  function changeCounter(key, delta) {
+    counters[key] = Math.max(0, Math.min(10, counters[key] + delta));
+    var ids = {fullBath:'fullBathVal', halfBath:'halfBathVal', fireplace:'fireplaceVal'};
+    document.getElementById(ids[key]).textContent = counters[key];
+    if (key === 'fireplace') document.getElementById('fireplaceTypeWrap').style.display = counters.fireplace > 0 ? 'flex' : 'none';
+  }
+
+  /* ===== PROPERTY — YES/NO ===== */
+  function setGarage(val) {
+    garageOn = val;
+    document.getElementById('garageYes').classList.toggle('active', val);
+    document.getElementById('garageNo').classList.toggle('active', !val);
+    document.getElementById('garageTypeWrap').style.display = val ? 'block' : 'none';
+  }
+  function setAC(val) {
+    acOn = val;
+    document.getElementById('acYes').classList.toggle('active', val);
+    document.getElementById('acNo').classList.toggle('active', !val);
+  }
+  function setPool(val) {
+    poolOn = val;
+    document.getElementById('poolYes').classList.toggle('active', val);
+    document.getElementById('poolNo').classList.toggle('active', !val);
+  }
+
+  /* ===== PROPERTY — RADIO ===== */
+  function selectRadio(groupId, el) {
+    document.querySelectorAll('#' + groupId + ' .radio-item').forEach(function(r){ r.classList.remove('selected'); });
+    el.classList.add('selected');
+  }
+
+  /* ===== PROPERTY — SUBMIT ===== */
+  function pSubmitApplication() {
+    var elapsed = kyleStartTime ? Date.now() - kyleStartTime : 0;
+    var secs = Math.round(elapsed / 1000); var mins = Math.floor(secs / 60);
+    var timeStr = mins > 0 ? mins + 'm ' + (secs % 60) + 's' : secs + 's';
+    document.getElementById('pElapsedDisplay').textContent = 'This application only took ' + timeStr + ' from start to submission.';
+    document.getElementById('pCtaHeadline').textContent = 'This application took ' + timeStr + ' to complete. Imagine that at scale.';
+    showView('pviewLoadingSubmit');
+    var bar = document.getElementById('pLoadingBarSubmit');
+    var msg = document.getElementById('pLoadingMsgSubmit');
+    var i = 0; var steps = [[0,'Submitting application\u2026'],[100,'Submitting application\u2026']];
+    function next() {
+      if (i >= steps.length) { setTimeout(function(){ pGoToStep(5); }, 350); return; }
+      bar.style.width = steps[i][0] + '%'; msg.textContent = steps[i][1]; i++;
+      setTimeout(next, i === steps.length ? 400 : 200);
+    }
+    bar.style.width = '0%'; setTimeout(next, 80);
+  }
+
+  /* ===== PROPERTY — NAV ===== */
+  function pGoToStep(n) {
+    var map = {2:'pview2',3:'pview3',4:'pview4',5:'pview5'};
+    showView(map[n] || 'pview2');
+  }
+  function pShowView(id) { showView(id); }
+  function pRestartDemo() { restartDemo(); }
+
+  /* ===== SHARED NAV ===== */
+  function showView(id) {
+    document.querySelectorAll('.step-view').forEach(function(v){ v.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  /* ===== SHARED RESTART ===== */
+  function restartDemo() {
+    selectedPersona = null; jennyStartTime = null; kyleStartTime = null;
+    selectedVehicles = new Set(['v1','v2']); customVehicleCount = 0; additionalDriverCount = 0;
+    hmInsure = null; counters = {fullBath:3, halfBath:1, fireplace:0};
+    garageOn = true; acOn = true; poolOn = false;
+    document.getElementById('personaBtn').disabled = true;
+    document.querySelectorAll('.persona-card:not(.coming-soon)').forEach(function(c){ c.classList.remove('selected'); });
+    ['v1','v2'].forEach(function(id){
+      var pw = document.getElementById('pvwrap-' + id); if (pw) pw.classList.add('selected');
+      var tg = document.getElementById('toggle-' + id); if (tg) tg.classList.add('on');
+      var dt = document.getElementById('details-' + id); if (dt) { dt.style.opacity=''; dt.style.pointerEvents=''; }
+    });
+    var cvc = document.getElementById('customVehiclesContainer'); if (cvc) cvc.innerHTML = '';
+    var adc = document.getElementById('additionalDriversContainer'); if (adc) adc.innerHTML = '';
+    updateVehSummary();
+    var hmYes = document.getElementById('hmYes'); if (hmYes) hmYes.classList.remove('selected');
+    var hmNo  = document.getElementById('hmNo');  if (hmNo)  hmNo.classList.remove('selected');
+    var hmWarn = document.getElementById('hmWarn'); if (hmWarn) hmWarn.style.display = 'none';
+    var detYes = document.getElementById('detYes'); if (detYes) detYes.classList.add('selected');
+    var detNo  = document.getElementById('detNo');  if (detNo)  detNo.classList.remove('selected');
+    var fbv = document.getElementById('fullBathVal'); if (fbv) fbv.textContent = '3';
+    var hbv = document.getElementById('halfBathVal'); if (hbv) hbv.textContent = '1';
+    var fpv = document.getElementById('fireplaceVal'); if (fpv) fpv.textContent = '0';
+    var ftw = document.getElementById('fireplaceTypeWrap'); if (ftw) ftw.style.display = 'none';
+    var gy = document.getElementById('garageYes'); if (gy) gy.classList.add('active');
+    var gn = document.getElementById('garageNo');  if (gn) gn.classList.remove('active');
+    var gtw = document.getElementById('garageTypeWrap'); if (gtw) gtw.style.display = 'block';
+    var ay = document.getElementById('acYes'); if (ay) ay.classList.add('active');
+    var an = document.getElementById('acNo');  if (an) an.classList.remove('active');
+    var py = document.getElementById('poolYes'); if (py) py.classList.remove('active');
+    var pn = document.getElementById('poolNo');  if (pn) pn.classList.add('active');
+    ['gateFirst','gateLast','gateEmail'].forEach(function(id){
+      var el = document.getElementById(id); if (el) { el.value = ''; el.classList.remove('error'); }
+    });
+    ['errFirst','errLast','gateErr'].forEach(function(id){
+      var el = document.getElementById(id); if (el) el.textContent = '';
+    });
+    showView('view0');
+  }
+
+</script>
+</body>
+</html>
